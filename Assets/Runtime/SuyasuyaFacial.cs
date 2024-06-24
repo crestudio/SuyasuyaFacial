@@ -151,7 +151,7 @@ namespace com.vrsuya.suyasuyafacial {
 			foreach (KeyValuePair<string, string> dictTargetAnimationClip in dictSuyasuyaAnimationClips) {
 				if (!String.IsNullOrEmpty(GUIDToAssetName(dictTargetAnimationClip.Key, true))) {
 					AnimationClip TargetAnimationClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(AssetDatabase.GUIDToAssetPath(dictTargetAnimationClip.Key));
-					if (!TargetAnimationClip.empty) {
+					if (TargetAnimationClip && TargetAnimationClip.GetType() == typeof(AnimationClip)) {
 						newAnimationClips = newAnimationClips.Concat(new AnimationClip[] { TargetAnimationClip }).ToArray();
 					}
 				}
