@@ -18,6 +18,7 @@ namespace com.vrsuya.suyasuyafacial {
         SerializedProperty SerializedTargetAnimationClips;
         SerializedProperty SerializedTargetBlendShapes;
 		SerializedProperty SerializedStatusCode;
+		SerializedProperty SerializedCountUpdatedCurve;
 
 		public static int LanguageIndex = 0;
         public readonly string[] LanguageType = new[] { "English", "한국어", "日本語" };
@@ -28,6 +29,7 @@ namespace com.vrsuya.suyasuyafacial {
 			SerializedTargetAnimationClips = serializedObject.FindProperty("TargetAnimationClips");
 			SerializedTargetBlendShapes = serializedObject.FindProperty("TargetBlendShapes");
 			SerializedStatusCode = serializedObject.FindProperty("StatusCode");
+			SerializedCountUpdatedCurve = serializedObject.FindProperty("CountUpdatedCurve");
 		}
 
         public override void OnInspectorGUI() {
@@ -58,13 +60,23 @@ namespace com.vrsuya.suyasuyafacial {
 			}
 			EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
 			if (!string.IsNullOrEmpty(SerializedStatusCode.stringValue)) {
-				EditorGUILayout.HelpBox(LanguageHelper.GetContextString(SerializedStatusCode.stringValue), MessageType.Warning);
+				EditorGUILayout.HelpBox(ReturnStatusString(SerializedStatusCode.stringValue), MessageType.Warning);
             }
 			serializedObject.ApplyModifiedProperties();
             if (GUILayout.Button(LanguageHelper.GetContextString("String_UpdateAnimations"))) {
                 (target as SuyasuyaFacial).UpdateAnimationClips();
 				Repaint();
 			}
+		}
+
+		/// <summary>요청한 StatusCode를 요청한 언어로 번역하여 현재 데이터 결과를 반영한 String으로 반환합니다.</summary>
+		/// <returns>완전한 StatusCode의 String</returns>
+		private string ReturnStatusString(string StatusCode) {
+			string ReturnString = LanguageHelper.GetContextString(StatusCode);
+			if (SerializedCountUpdatedCurve.intValue > 0) {
+				ReturnString = string.Format(ReturnString, SerializedCountUpdatedCurve.intValue);
+			}
+			return ReturnString;
 		}
 	}
 }

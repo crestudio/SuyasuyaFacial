@@ -48,7 +48,8 @@ namespace com.vrsuya.suyasuyafacial {
 			// 에러 코드
 			{ "NO_SHAPEKEY", "No shapekeys with values set" },
 			{ "NO_AVATAR", "No Avatar is selected" },
-			{ "NO_FACEMESH", "Face mesh not found" }
+			{ "NO_FACEMESH", "Face mesh not found" },
+			{ "COMPLETED", "{0} blendshapes have been added to the animation clip" }
 		};
 
 		// 한국어 사전 데이터
@@ -65,7 +66,8 @@ namespace com.vrsuya.suyasuyafacial {
 			// 에러 코드
 			{ "NO_SHAPEKEY", "값이 설정된 쉐이프키가 없습니다" },
 			{ "NO_AVATAR", "아바타가 지정되지 않았습니다" },
-			{ "NO_FACEMESH", "얼굴 메쉬를 찾을 수 없습니다" }
+			{ "NO_FACEMESH", "얼굴 메쉬를 찾을 수 없습니다" },
+			{ "COMPLETED", "{0}개의 블렌드쉐이프 애니메이션 키가 추가되었습니다" }
 		};
 
 		// 일본어 사전 데이터
@@ -82,7 +84,8 @@ namespace com.vrsuya.suyasuyafacial {
 			// 에러 코드
 			{ "NO_SHAPEKEY", "値が設定されたシェイプキーがありません" },
 			{ "NO_AVATAR", "アバターが指定されていません" },
-			{ "NO_FACEMESH", "顔のメッシュが見つかりません" }
+			{ "NO_FACEMESH", "顔のメッシュが見つかりません" },
+			{ "COMPLETED", "{0}個のブレンドシェイプアニメーションキーが追加されました" }
 		};
 	}
 }

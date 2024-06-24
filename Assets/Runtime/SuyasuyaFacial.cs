@@ -42,6 +42,7 @@ namespace com.vrsuya.suyasuyafacial {
 		
 		// 상태 반환
 		public string StatusCode = "";
+		public int CountUpdatedCurve = 0;
 		public int UndoGroupIndex;
 
 		// 컴포넌트 최초 로드시 동작
@@ -62,7 +63,8 @@ namespace com.vrsuya.suyasuyafacial {
 			Undo.SetCurrentGroupName("VRSuya Suyasuya Facial");
 			UndoGroupIndex = Undo.GetCurrentGroup();
 			if (VerifyVariable()) {
-				
+				UpdateSuyasuyaAnimationClips();
+				StatusCode = "COMPLETED";
 				Debug.Log("[VRSuya Suyasuya Facial] Update Animation Clips Completed");
             }
 			return;
@@ -71,6 +73,7 @@ namespace com.vrsuya.suyasuyafacial {
 		/// <summary>변수를 초기화하고 다시 불러옵니다.</summary>
 		public void ReloadVariable() {
 			TargetBlendShapes = new FaceBlendShape[0];
+			CountUpdatedCurve = 0;
 			if (!AvatarGameObject) AvatarGameObject = this.gameObject;
 			if (!AvatarHeadSkinnedMeshRenderer) {
 				AvatarHeadSkinnedMeshRenderer = GetAvatarHeadSkinnedMeshRenderer(AvatarGameObject);
@@ -154,6 +157,63 @@ namespace com.vrsuya.suyasuyafacial {
 				}
 			}
 			return newAnimationClips;
+		}
+
+		/// <summary>애니메이션 클립에서 0 값의 Blendshape 애니메이션 키를 추가합니다.</summary>
+		private void UpdateSuyasuyaAnimationClips() {
+			CountUpdatedCurve = 0;
+			foreach (AnimationClip CurrentAnimationClip in TargetAnimationClips) {
+				string[] AddBlendshapeList = GetAddBlendshapeList(CurrentAnimationClip);
+				if (AddBlendshapeList.Length > 0) {
+					Undo.RecordObject(CurrentAnimationClip, "Added new blendshape animation");
+					foreach (string TargetBlendshape in AddBlendshapeList) {
+						EditorCurveBinding newEditorCurveBinding = new EditorCurveBinding {
+							type = typeof(SkinnedMeshRenderer),
+							path = AvatarHeadSkinnedMeshRenderer.name,
+							propertyName = "blendShape." + TargetBlendshape
+						};
+						Keyframe[] newKeyframe = new Keyframe[1];
+						newKeyframe[0] = new Keyframe(0f, 0f);
+						AnimationCurve newAnimationCurve = new AnimationCurve(newKeyframe);
+						AnimationUtility.SetEditorCurve(CurrentAnimationClip, newEditorCurveBinding, newAnimationCurve);
+						CountUpdatedCurve++;
+					}
+					EditorUtility.SetDirty(CurrentAnimationClip);
+					Undo.CollapseUndoOperations(UndoGroupIndex);
+				}
+			}
+			Debug.Log("[VRSuya SuyasuyaFacial] " + CountUpdatedCurve + " blendshapes have been added to the animation clip");
+			return;
+		}
+
+		/// <summary>애니메이션 클립에서 존재하는 Blendshape 리스트를 반환 합니다.</summary>
+		/// <returns>애니메이션 클립에 존재하는 Blendshape 리스트</returns>
+		private List<(string Path, string BlendShapeName)> GetExistAnimationBlendshapes(AnimationClip TargetAnimationClip) {
+			List<(string Path, string BlendShapeName)> newExistBlendshapes = new List<(string, string)> { };
+			foreach (EditorCurveBinding Binding in AnimationUtility.GetCurveBindings(TargetAnimationClip)) {
+				if (Binding.type == typeof(SkinnedMeshRenderer)) {
+					if (Binding.propertyName.Contains("blendShape")) {
+						string BlendShapeName = Binding.propertyName.Remove(0, 11);
+						newExistBlendshapes.Add((Binding.path, BlendShapeName));
+					}
+				}
+			}
+			return newExistBlendshapes;
+		}
+
+		/// <summary>애니메이션 클립과 비교하여 실제로 삽입해야 되는 Blendshape 어레이를 반환합니다.</summary>
+		/// <returns>중복 되지 않는 Blendshape 어레이</returns>
+		private string[] GetAddBlendshapeList(AnimationClip TargetAnimationClip) {
+			string[] TargetAnimationBlendshapeList = GetExistAnimationBlendshapes(TargetAnimationClip)
+				.Where((AnimationBlendShape) => AnimationBlendShape.Path == AvatarHeadSkinnedMeshRenderer.name)
+				.Select((AnimationBlendShape) => AnimationBlendShape.BlendShapeName)
+				.ToArray();
+			string[] AddBlendshapeList = TargetBlendShapes
+				.Where((AvatarBlendShape) => AvatarBlendShape.ActiveValue == true)
+				.Select((AvatarBlendShape) => AvatarBlendShape.BlendShapeName)
+				.Where((AvatarBlendShape) => Array.Exists(TargetAnimationBlendshapeList, AnimationBlendShape => AvatarBlendShape != AnimationBlendShape))
+				.ToArray();
+			return AddBlendshapeList;
 		}
 
 		/// <summary>요청한 GUID를 파일 이름으로 반환합니다. 2번째 인자는 확장명 포함 여부를 결정합니다.</summary>
