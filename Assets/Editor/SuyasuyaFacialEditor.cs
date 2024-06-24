@@ -21,7 +21,6 @@ namespace com.vrsuya.suyasuyafacial {
 
 		public static int LanguageIndex = 0;
         public readonly string[] LanguageType = new[] { "English", "한국어", "日本語" };
-		public static bool FoldAdvanced = false;
 
 		void OnEnable() {
             SerializedAvatarGameObject = serializedObject.FindProperty("AvatarGameObject");
