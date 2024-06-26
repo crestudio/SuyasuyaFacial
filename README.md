@@ -4,7 +4,7 @@
 
 ## 다운로드
 
-[VCC 패키지 추가](https://crestudio.notion.site/)
+[VCC 패키지 추가](https://crestudio.notion.site/SuyasuyaFacial-66c6becd7f554baa99ec509b4113fff4)
 
 [UnityPackage 다운로드](https://github.com/crestudio/SuyasuyaFacial/releases)
 
