@@ -13,8 +13,10 @@ namespace com.vrsuya.suyasuyafacial {
 
         SerializedProperty SerializedAvatarGameObject;
         SerializedProperty SerializedAvatarHeadSkinnedMeshRenderer;
-        SerializedProperty SerializedTargetAnimationClips;
+		SerializedProperty SerializedAvatarFXAnimatorController;
+		SerializedProperty SerializedTargetAnimationClips;
         SerializedProperty SerializedTargetBlendShapes;
+		SerializedProperty SerializedTargetAnimationBlendShapes;
 		SerializedProperty SerializedStatusCode;
 		SerializedProperty SerializedCountUpdatedCurve;
 
@@ -24,8 +26,10 @@ namespace com.vrsuya.suyasuyafacial {
 		void OnEnable() {
             SerializedAvatarGameObject = serializedObject.FindProperty("AvatarGameObject");
 			SerializedAvatarHeadSkinnedMeshRenderer = serializedObject.FindProperty("AvatarHeadSkinnedMeshRenderer");
+			SerializedAvatarFXAnimatorController = serializedObject.FindProperty("AvatarFXAnimatorController");
 			SerializedTargetAnimationClips = serializedObject.FindProperty("TargetAnimationClips");
 			SerializedTargetBlendShapes = serializedObject.FindProperty("TargetBlendShapes");
+			SerializedTargetAnimationBlendShapes = serializedObject.FindProperty("TargetAnimationBlendShapes");
 			SerializedStatusCode = serializedObject.FindProperty("StatusCode");
 			SerializedCountUpdatedCurve = serializedObject.FindProperty("CountUpdatedCurve");
 		}
@@ -36,6 +40,7 @@ namespace com.vrsuya.suyasuyafacial {
 			EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
             EditorGUILayout.PropertyField(SerializedAvatarGameObject, new GUIContent(LanguageHelper.GetContextString("String_TargetAvatar")));
 			EditorGUILayout.PropertyField(SerializedAvatarHeadSkinnedMeshRenderer, new GUIContent(LanguageHelper.GetContextString("String_TargetMesh")));
+			EditorGUILayout.PropertyField(SerializedAvatarFXAnimatorController, new GUIContent(LanguageHelper.GetContextString("String_TargetFXLayer")));
 			EditorGUILayout.PropertyField(SerializedTargetAnimationClips, new GUIContent(LanguageHelper.GetContextString("String_TargetAnimations")));
 			EditorGUI.indentLevel++;
 			if (SerializedTargetBlendShapes.arraySize > 0) {
@@ -51,6 +56,20 @@ namespace com.vrsuya.suyasuyafacial {
 			} else {
 				EditorGUILayout.LabelField(LanguageHelper.GetContextString("String_TargetBlendShape"), EditorStyles.boldLabel);
 				EditorGUILayout.HelpBox(LanguageHelper.GetContextString("NO_SHAPEKEY"), MessageType.Info);
+			}
+			if (SerializedTargetAnimationBlendShapes.arraySize > 0) {
+				EditorGUILayout.LabelField(LanguageHelper.GetContextString("String_TargetAnimationBlendShape"), EditorStyles.boldLabel);
+				for (int Index = 0; Index < SerializedTargetAnimationBlendShapes.arraySize; Index++) {
+					SerializedProperty BlendShapeProperty = SerializedTargetAnimationBlendShapes.GetArrayElementAtIndex(Index);
+					SerializedProperty ActiveValueProperty = BlendShapeProperty.FindPropertyRelative("ActiveValue");
+					SerializedProperty BlendShapeNameProperty = BlendShapeProperty.FindPropertyRelative("BlendShapeName");
+					EditorGUILayout.BeginHorizontal();
+					ActiveValueProperty.boolValue = EditorGUILayout.ToggleLeft(BlendShapeNameProperty.stringValue, ActiveValueProperty.boolValue);
+					EditorGUILayout.EndHorizontal();
+				}
+			} else {
+				EditorGUILayout.LabelField(LanguageHelper.GetContextString("String_TargetAnimationBlendShape"), EditorStyles.boldLabel);
+				EditorGUILayout.HelpBox(LanguageHelper.GetContextString("NO_ANIMSHAPEKEY"), MessageType.Info);
 			}
 			EditorGUI.indentLevel--;
 			if (GUILayout.Button(LanguageHelper.GetContextString("String_Reload"))) {

@@ -5,6 +5,7 @@ using System.Linq;
 
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.Animations;
 
 using VRC.SDK3.Avatars.Components;
 
@@ -30,6 +31,17 @@ namespace com.vrsuya.suyasuyafacial {
 		}
 	};
 
+	[Serializable]
+	public struct AnimationBlendShape {
+		public bool ActiveValue;
+		public string BlendShapeName;
+
+		public AnimationBlendShape(bool BoolValue, string StringName) {
+			ActiveValue = BoolValue;
+			BlendShapeName = StringName;
+		}
+	};
+
 	[ExecuteInEditMode]
 	[AddComponentMenu("VRSuya Suyasuya Facial")]
 	public class SuyasuyaFacial : MonoBehaviour {
@@ -37,8 +49,10 @@ namespace com.vrsuya.suyasuyafacial {
         // 아바타 에디터용 변수
         public GameObject AvatarGameObject;
 		public SkinnedMeshRenderer AvatarHeadSkinnedMeshRenderer;
+		public AnimatorController AvatarFXAnimatorController;
 		public AnimationClip[] TargetAnimationClips = new AnimationClip[0];
 		public FaceBlendShape[] TargetBlendShapes = new FaceBlendShape[0];
+		public AnimationBlendShape[] TargetAnimationBlendShapes = new AnimationBlendShape[0];
 		
 		// 상태 반환
 		public string StatusCode = "";
@@ -51,6 +65,10 @@ namespace com.vrsuya.suyasuyafacial {
 			AvatarHeadSkinnedMeshRenderer = GetAvatarHeadSkinnedMeshRenderer(AvatarGameObject);
 			if (AvatarHeadSkinnedMeshRenderer) {
 				TargetBlendShapes = GetAvatarBlendShapeStatus(AvatarHeadSkinnedMeshRenderer);
+			}
+			AvatarFXAnimatorController = GetAvatarFXAnimatorController(AvatarGameObject);
+			if (AvatarFXAnimatorController) {
+				TargetAnimationBlendShapes = GetAnimationBlendShapeStatus(AvatarFXAnimatorController);
 			}
 			if (TargetAnimationClips.Length == 0) TargetAnimationClips = GetVRSuyaSuyasuyaAnimations();
 		}
@@ -73,6 +91,7 @@ namespace com.vrsuya.suyasuyafacial {
 		/// <summary>변수를 초기화하고 다시 불러옵니다.</summary>
 		public void ReloadVariable() {
 			TargetBlendShapes = new FaceBlendShape[0];
+			TargetAnimationBlendShapes = new AnimationBlendShape[0];
 			CountUpdatedCurve = 0;
 			if (!AvatarGameObject) AvatarGameObject = this.gameObject;
 			if (!AvatarHeadSkinnedMeshRenderer) {
@@ -80,6 +99,10 @@ namespace com.vrsuya.suyasuyafacial {
 			}
 			if (AvatarHeadSkinnedMeshRenderer) {
 				TargetBlendShapes = GetAvatarBlendShapeStatus(AvatarHeadSkinnedMeshRenderer);
+			}
+			if (!AvatarFXAnimatorController) AvatarFXAnimatorController = GetAvatarFXAnimatorController(AvatarGameObject);
+			if (AvatarFXAnimatorController) {
+				TargetAnimationBlendShapes = GetAnimationBlendShapeStatus(AvatarFXAnimatorController);
 			}
 			if (TargetAnimationClips.Length == 0) TargetAnimationClips = GetVRSuyaSuyasuyaAnimations();
 			return;
@@ -116,6 +139,17 @@ namespace com.vrsuya.suyasuyafacial {
 			return null;
 		}
 
+		/// <summary>아바타의 FX 레이어 애니메이터 컨트롤러를 찾습니다.</summary>
+		/// <returns>아바타의 FX 레이어 애니메이터 컨트롤러</returns>
+		private AnimatorController GetAvatarFXAnimatorController(GameObject TargetGameObject) {
+			AvatarGameObject.TryGetComponent(typeof(VRCAvatarDescriptor), out Component AvatarDescriptor);
+			if (AvatarDescriptor) {
+				VRCAvatarDescriptor.CustomAnimLayer TargetAnimatorController = Array.Find(AvatarDescriptor.GetComponent<VRCAvatarDescriptor>().baseAnimationLayers, AnimationLayer => AnimationLayer.type == VRCAvatarDescriptor.AnimLayerType.FX);
+				return (AnimatorController)TargetAnimatorController.animatorController;
+			}
+			return null;
+		}
+
 		/// <summary>아바타에서 적용된 Blendshape 리스트를 반환합니다.</summary>
 		/// <returns>활성화 아바타 BlendShape 어레이</returns>
 		private FaceBlendShape[] GetAvatarBlendShapeStatus(SkinnedMeshRenderer TargetSkinnedMeshRenderer) {
@@ -134,6 +168,39 @@ namespace com.vrsuya.suyasuyafacial {
 				}
 			}
 			return newFaceBlendShapeList;
+		}
+
+		/// <summary>애니메이션에서 적용된 Blendshape 리스트를 반환합니다.</summary>
+		/// <returns>활성화 FX 레이어 BlendShape 어레이</returns>
+		private AnimationBlendShape[] GetAnimationBlendShapeStatus(AnimatorController TargetAnimatorController) {
+			AnimationBlendShape[] newAnimationBlendShapeList = new AnimationBlendShape[0];
+			string TargetPath = "Body";
+			if (AvatarHeadSkinnedMeshRenderer) TargetPath = AvatarHeadSkinnedMeshRenderer.name;
+			string[] AvatarBlendShapes = new string[0];
+            if (TargetBlendShapes.Length > 0) {
+				AvatarBlendShapes = TargetBlendShapes.Select(AvatarBlendShape => AvatarBlendShape.BlendShapeName).ToArray();
+			}
+            if (TargetAnimatorController.animationClips.Length > 0) {
+				foreach (AnimationClip TargetAnimationClip in TargetAnimatorController.animationClips) {
+					string[] TargetAnimationBlendshapeList = GetExistAnimationBlendshapes(TargetAnimationClip)
+						.Where((AnimationBlendShape) => AnimationBlendShape.Path == TargetPath)
+						.Select((AnimationBlendShape) => AnimationBlendShape.BlendShapeName)
+						.ToArray();
+					if (TargetAnimationBlendshapeList.Length > 0) {
+						for (int Index = 0; Index < TargetAnimationBlendshapeList.Length; Index++) {
+							if (!Array.Exists(AvatarBlendShapes, AvatarBlendShape => AvatarBlendShape == TargetAnimationBlendshapeList[Index])) {
+								AnimationBlendShape TargetBlendShape = new AnimationBlendShape(
+									false,
+									TargetAnimationBlendshapeList[Index]
+									);
+								newAnimationBlendShapeList = newAnimationBlendShapeList.Concat(new AnimationBlendShape[] { TargetBlendShape }).ToArray();
+							}
+						}
+					}
+				}
+				newAnimationBlendShapeList = newAnimationBlendShapeList.Distinct().ToArray();
+			}
+			return newAnimationBlendShapeList;
 		}
 
 		/// <summary>에셋에서 Suyasuya 애니메이션을 찾아서 리스트로 반환 합니다.</summary>
@@ -208,10 +275,17 @@ namespace com.vrsuya.suyasuyafacial {
 				.Where((AnimationBlendShape) => AnimationBlendShape.Path == AvatarHeadSkinnedMeshRenderer.name)
 				.Select((AnimationBlendShape) => AnimationBlendShape.BlendShapeName)
 				.ToArray();
-			string[] AddBlendshapeList = TargetBlendShapes
+			string[] AvatarBlendShapes = TargetBlendShapes
 				.Where((AvatarBlendShape) => AvatarBlendShape.ActiveValue == true)
 				.Select((AvatarBlendShape) => AvatarBlendShape.BlendShapeName)
-				.Where((AvatarBlendShape) => Array.Exists(TargetAnimationBlendshapeList, AnimationBlendShape => AvatarBlendShape != AnimationBlendShape))
+				.ToArray();
+			string[] AnimationBlendShapes = TargetAnimationBlendShapes
+				.Where((AnimationBlendShape) => AnimationBlendShape.ActiveValue == true)
+				.Select((AnimationBlendShape) => AnimationBlendShape.BlendShapeName)
+				.ToArray();
+			string[] FinalBlendShapes = AvatarBlendShapes.Concat(AnimationBlendShapes).ToArray();
+			string[] AddBlendshapeList = FinalBlendShapes
+				.Where((TargetBlendShape) => Array.Exists(TargetAnimationBlendshapeList, AnimationBlendShape => TargetBlendShape != AnimationBlendShape))
 				.ToArray();
 			return AddBlendshapeList;
 		}
