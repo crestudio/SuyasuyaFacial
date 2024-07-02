@@ -37,9 +37,9 @@ namespace com.vrsuya.suyasuyafacial {
             EditorGUILayout.PropertyField(SerializedAvatarGameObject, new GUIContent(LanguageHelper.GetContextString("String_TargetAvatar")));
 			EditorGUILayout.PropertyField(SerializedAvatarHeadSkinnedMeshRenderer, new GUIContent(LanguageHelper.GetContextString("String_TargetMesh")));
 			EditorGUILayout.PropertyField(SerializedTargetAnimationClips, new GUIContent(LanguageHelper.GetContextString("String_TargetAnimations")));
-			EditorGUILayout.LabelField(LanguageHelper.GetContextString("String_TargetBlendShape"), EditorStyles.boldLabel);
 			EditorGUI.indentLevel++;
 			if (SerializedTargetBlendShapes.arraySize > 0) {
+				EditorGUILayout.LabelField(LanguageHelper.GetContextString("String_TargetBlendShape"), EditorStyles.boldLabel);
 				for (int Index = 0; Index < SerializedTargetBlendShapes.arraySize; Index++) {
 					SerializedProperty BlendShapeProperty = SerializedTargetBlendShapes.GetArrayElementAtIndex(Index);
 					SerializedProperty ActiveValueProperty = BlendShapeProperty.FindPropertyRelative("ActiveValue");
@@ -49,6 +49,7 @@ namespace com.vrsuya.suyasuyafacial {
 					EditorGUILayout.EndHorizontal();
 				}
 			} else {
+				EditorGUILayout.LabelField(LanguageHelper.GetContextString("String_TargetBlendShape"), EditorStyles.boldLabel);
 				EditorGUILayout.HelpBox(LanguageHelper.GetContextString("NO_SHAPEKEY"), MessageType.Info);
 			}
 			EditorGUI.indentLevel--;
