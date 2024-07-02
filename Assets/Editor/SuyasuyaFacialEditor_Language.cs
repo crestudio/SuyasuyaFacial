@@ -41,7 +41,7 @@ namespace com.vrsuya.suyasuyafacial {
 			{ "String_TargetAvatar", "Target Avatar" },
 			{ "String_TargetMesh", "Face Mesh" },
 			{ "String_TargetAnimations", "Target Animation Clips" },
-			{ "String_TargetBlendShape", "Target Blendshape" },
+			{ "String_TargetBlendShape", "Facial Blendshapes with Value" },
 			{ "String_Reload", "Reload" },
 			{ "String_UpdateAnimations", "Update Animation Clips" },
 
@@ -59,7 +59,7 @@ namespace com.vrsuya.suyasuyafacial {
 			{ "String_TargetAvatar", "대상 아바타" },
 			{ "String_TargetMesh", "얼굴 메쉬" },
 			{ "String_TargetAnimations", "대상 애니메이션 클립" },
-			{ "String_TargetBlendShape", "대상 쉐이프키" },
+			{ "String_TargetBlendShape", "적용된 얼굴 쉐이프키" },
 			{ "String_Reload", "다시 불러오기" },
 			{ "String_UpdateAnimations", "애니메이션 업데이트" },
 
@@ -77,7 +77,7 @@ namespace com.vrsuya.suyasuyafacial {
 			{ "String_TargetAvatar", "対象アバター" },
 			{ "String_TargetMesh", "顔メッシュ" },
 			{ "String_TargetAnimations", "対象アニメーションクリップ" },
-			{ "String_TargetBlendShape", "対象シェイプキー" },
+			{ "String_TargetBlendShape", "適用された顔のシェイプキー" },
 			{ "String_Reload", "リロード" },
 			{ "String_UpdateAnimations", "アニメーション·アップデート" },
 
