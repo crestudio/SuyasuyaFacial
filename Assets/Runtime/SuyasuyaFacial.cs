@@ -71,6 +71,7 @@ namespace com.vrsuya.suyasuyafacial {
 				TargetAnimationBlendShapes = GetAnimationBlendShapeStatus(AvatarFXAnimatorController);
 			}
 			if (TargetAnimationClips.Length == 0) TargetAnimationClips = GetVRSuyaSuyasuyaAnimations();
+			CleanupBlendShapeList();
 		}
 
 		/// <summary>
@@ -105,6 +106,7 @@ namespace com.vrsuya.suyasuyafacial {
 				TargetAnimationBlendShapes = GetAnimationBlendShapeStatus(AvatarFXAnimatorController);
 			}
 			if (TargetAnimationClips.Length == 0) TargetAnimationClips = GetVRSuyaSuyasuyaAnimations();
+			CleanupBlendShapeList();
 			return;
 		}
 
@@ -201,6 +203,26 @@ namespace com.vrsuya.suyasuyafacial {
 				newAnimationBlendShapeList = newAnimationBlendShapeList.Distinct().ToArray();
 			}
 			return newAnimationBlendShapeList;
+		}
+
+		/// <summary>블렌드쉐이프 리스트에서 중복된 값을 제외합니다.</summary>
+		private void CleanupBlendShapeList() {
+			if (TargetAnimationClips.Length > 0) {
+				string TargetPath = "Body";
+				if (AvatarHeadSkinnedMeshRenderer) TargetPath = AvatarHeadSkinnedMeshRenderer.name;
+				string[] ExistAnimationBlendShapes = new string[0];
+				foreach (AnimationClip TargetAnimationClip in TargetAnimationClips) {
+					ExistAnimationBlendShapes = ExistAnimationBlendShapes.Concat(GetExistAnimationBlendshapes(TargetAnimationClip)
+						.Where((AnimationBlendShape) => AnimationBlendShape.Path == TargetPath)
+						.Select((AnimationBlendShape) => AnimationBlendShape.BlendShapeName)
+						.ToArray()).Distinct().ToArray();
+				}
+				if (ExistAnimationBlendShapes.Length > 0) {
+					if (TargetBlendShapes.Length > 0) TargetBlendShapes = Array.FindAll(TargetBlendShapes, TargetBlendShape => !ExistAnimationBlendShapes.Contains(TargetBlendShape.BlendShapeName));
+					if (TargetAnimationBlendShapes.Length > 0) TargetAnimationBlendShapes = Array.FindAll(TargetAnimationBlendShapes, TargetAnimationBlendShape => !ExistAnimationBlendShapes.Contains(TargetAnimationBlendShape.BlendShapeName));
+				}
+			}
+			return;
 		}
 
 		/// <summary>에셋에서 Suyasuya 애니메이션을 찾아서 리스트로 반환 합니다.</summary>
