@@ -184,7 +184,7 @@ namespace com.vrsuya.suyasuyafacial {
 			}
             if (TargetAnimatorController.animationClips.Length > 0) {
 				foreach (AnimationClip TargetAnimationClip in TargetAnimatorController.animationClips) {
-					string[] TargetAnimationBlendshapeList = GetExistAnimationBlendshapes(TargetAnimationClip)
+					string[] TargetAnimationBlendshapeList = GetExistAnimationBlendshapes(TargetAnimationClip, true)
 						.Where((AnimationBlendShape) => AnimationBlendShape.Path == TargetPath)
 						.Select((AnimationBlendShape) => AnimationBlendShape.BlendShapeName)
 						.ToArray();
@@ -212,7 +212,7 @@ namespace com.vrsuya.suyasuyafacial {
 				if (AvatarHeadSkinnedMeshRenderer) TargetPath = AvatarHeadSkinnedMeshRenderer.name;
 				string[] ExistAnimationBlendShapes = new string[0];
 				foreach (AnimationClip TargetAnimationClip in TargetAnimationClips) {
-					ExistAnimationBlendShapes = ExistAnimationBlendShapes.Concat(GetExistAnimationBlendshapes(TargetAnimationClip)
+					ExistAnimationBlendShapes = ExistAnimationBlendShapes.Concat(GetExistAnimationBlendshapes(TargetAnimationClip, false)
 						.Where((AnimationBlendShape) => AnimationBlendShape.Path == TargetPath)
 						.Select((AnimationBlendShape) => AnimationBlendShape.BlendShapeName)
 						.ToArray()).Distinct().ToArray();
@@ -277,13 +277,21 @@ namespace com.vrsuya.suyasuyafacial {
 
 		/// <summary>애니메이션 클립에서 존재하는 Blendshape 리스트를 반환 합니다.</summary>
 		/// <returns>애니메이션 클립에 존재하는 Blendshape 리스트</returns>
-		private List<(string Path, string BlendShapeName)> GetExistAnimationBlendshapes(AnimationClip TargetAnimationClip) {
+		private List<(string Path, string BlendShapeName)> GetExistAnimationBlendshapes(AnimationClip TargetAnimationClip, bool HasValue) {
 			List<(string Path, string BlendShapeName)> newExistBlendshapes = new List<(string, string)> { };
 			foreach (EditorCurveBinding Binding in AnimationUtility.GetCurveBindings(TargetAnimationClip)) {
 				if (Binding.type == typeof(SkinnedMeshRenderer)) {
 					if (Binding.propertyName.Contains("blendShape")) {
-						string BlendShapeName = Binding.propertyName.Remove(0, 11);
-						newExistBlendshapes.Add((Binding.path, BlendShapeName));
+						if (HasValue) {
+							AnimationCurve TargetAnimationCurve = AnimationUtility.GetEditorCurve(TargetAnimationClip, Binding);
+							if (Array.Exists(TargetAnimationCurve.keys, AnimKey => AnimKey.value > 0.0f)) {
+								string BlendShapeName = Binding.propertyName.Remove(0, 11);
+								newExistBlendshapes.Add((Binding.path, BlendShapeName));
+							}
+						} else {
+							string BlendShapeName = Binding.propertyName.Remove(0, 11);
+							newExistBlendshapes.Add((Binding.path, BlendShapeName));
+						}
 					}
 				}
 			}
@@ -293,7 +301,7 @@ namespace com.vrsuya.suyasuyafacial {
 		/// <summary>애니메이션 클립과 비교하여 실제로 삽입해야 되는 Blendshape 어레이를 반환합니다.</summary>
 		/// <returns>중복 되지 않는 Blendshape 어레이</returns>
 		private string[] GetAddBlendshapeList(AnimationClip TargetAnimationClip) {
-			string[] TargetAnimationBlendshapeList = GetExistAnimationBlendshapes(TargetAnimationClip)
+			string[] TargetAnimationBlendshapeList = GetExistAnimationBlendshapes(TargetAnimationClip, false)
 				.Where((AnimationBlendShape) => AnimationBlendShape.Path == AvatarHeadSkinnedMeshRenderer.name)
 				.Select((AnimationBlendShape) => AnimationBlendShape.BlendShapeName)
 				.ToArray();
