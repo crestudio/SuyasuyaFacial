@@ -201,6 +201,7 @@ namespace com.vrsuya.suyasuyafacial {
 					}
 				}
 				newAnimationBlendShapeList = newAnimationBlendShapeList.Distinct().ToArray();
+				Array.Sort(newAnimationBlendShapeList, (a, b) => string.Compare(a.BlendShapeName, b.BlendShapeName, StringComparison.Ordinal));
 			}
 			return newAnimationBlendShapeList;
 		}
