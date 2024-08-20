@@ -43,7 +43,7 @@ namespace com.vrsuya.suyasuyafacial {
 	};
 
 	[ExecuteInEditMode]
-	[AddComponentMenu("VRSuya Suyasuya Facial")]
+	[AddComponentMenu("VRSuya/VRSuya Suyasuya Facial")]
 	public class SuyasuyaFacial : MonoBehaviour {
 
         // 아바타 에디터용 변수
